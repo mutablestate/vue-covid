@@ -1,17 +1,26 @@
 <template>
   <div id="app">
-    <img alt="Vue logo" src="./assets/logo.png" />
-    <HelloWorld msg="Welcome to Your Vue.js App" />
+    <section v-if="isLoading">
+      loading...
+    </section>
+    <section v-else>
+      <ul>
+        <li>Confirmed: {{ stats.confirmed.value }}</li>
+        <li>Deaths: {{ stats.deaths.value }}</li>
+        <li>Recovered: {{ stats.recovered.value }}</li>
+      </ul>
+    </section>
   </div>
 </template>
 
 <script>
-import HelloWorld from "./components/HelloWorld.vue";
+import { useCovidApi } from "@/composition/useCovidApi";
 
 export default {
   name: "App",
-  components: {
-    HelloWorld
+  setup() {
+    const { stats, isLoading } = useCovidApi();
+    return { stats, isLoading };
   }
 };
 </script>
