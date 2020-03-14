@@ -4,8 +4,8 @@ import dayjs from 'dayjs';
 const BASE_URL = 'https://covid19.mathdro.id/api';
 
 const handleError = err => {
-  console.log('OH NO!');
-  console.log(err);
+  // eslint-disable-next-line no-console
+  console.log('OH NO!', err);
 };
 
 export const useCovidApi = endpoint => {

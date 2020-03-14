@@ -1,5 +1,7 @@
 # vue-covid
 
+With thanks to https://github.com/mathdroid/covid-19-api
+
 ## Project setup
 ```
 yarn install
