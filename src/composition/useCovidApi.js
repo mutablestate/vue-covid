@@ -1,9 +1,10 @@
-import { watchEffect, ref } from "vue";
+import { watchEffect, ref, computed } from 'vue';
+import dayjs from 'dayjs';
 
-const BASE_URL = "https://covid19.mathdro.id/api";
+const BASE_URL = 'https://covid19.mathdro.id/api';
 
 const handleError = err => {
-  console.log("OH NO!");
+  console.log('OH NO!');
   console.log(err);
 };
 
@@ -11,6 +12,10 @@ export const useCovidApi = endpoint => {
   const url = endpoint ? `${BASE_URL}/${endpoint}` : `${BASE_URL}`;
   const isLoading = ref(true);
   let stats = ref({});
+  let updatedAt = computed(() => {
+    const lastUpdate = dayjs(stats.value.lastUpdate);
+    return lastUpdate.format('YYYY-MM-DD HH:mm:ss Z');
+  });
 
   watchEffect(() => {
     const fetchData = async () => {
@@ -28,5 +33,5 @@ export const useCovidApi = endpoint => {
       });
   });
 
-  return { stats, isLoading };
+  return { stats, isLoading, updatedAt };
 };
