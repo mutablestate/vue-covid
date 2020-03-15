@@ -3,7 +3,7 @@
     <div class="">
       <div class="font-bold text-l py-2">{{ title }}</div>
       <p class="text-gray-700 text-base">
-        {{ stat }}
+        {{ stat.toLocaleString() }}
       </p>
     </div>
     <div class="px-6 py-4">
@@ -35,5 +35,3 @@ export default {
   }
 };
 </script>
-
-<style></style>

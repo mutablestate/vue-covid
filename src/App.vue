@@ -7,34 +7,49 @@
       <h1 class="text-3xl mb-1 mt-4">COVID-19 Statistics</h1>
       <p class="text-l">Last Updated</p>
       <p>{{ updatedAt }}</p>
-      <div class="grid grid-cols-3 gap-4 mt-6">
-        <GridCard
-          title="Confirmed"
-          :stat="stats.confirmed.value"
-          tag="global"
-        />
-        <GridCard title="Deaths" :stat="stats.deaths.value" tag="global" />
-        <GridCard
-          title="Recovered"
-          :stat="stats.recovered.value"
-          tag="global"
-        />
-      </div>
+      <StatsGrid
+        :confirmed="confirmed"
+        :deaths="deaths"
+        :recovered="recovered"
+        tag="global"
+      />
+      <CountryStats />
     </section>
   </div>
 </template>
 
 <script>
-import { useCovidApi } from '@/composition/useCovidApi';
-import GridCard from '@/components/GridCard.vue';
+import { ref, computed } from 'vue';
+import dayjs from 'dayjs';
+import { useCovidApi, BASE_URL } from '@/composition/useCovidApi';
+import StatsGrid from '@/components/StatsGrid.vue';
+import CountryStats from '@/components/CountryStats.vue';
 
 export default {
   name: 'App',
-  components: { GridCard },
+  components: { StatsGrid, CountryStats },
   setup() {
-    const { stats, isLoading, updatedAt } = useCovidApi();
+    const confirmed = ref(0);
+    const recovered = ref(0);
+    const deaths = ref(0);
+    const lastUpdate = ref('');
 
-    return { stats, isLoading, updatedAt };
+    const getGlobalStats = data => {
+      confirmed.value = data.confirmed.value;
+      recovered.value = data.recovered.value;
+      deaths.value = data.deaths.value;
+      lastUpdate.value = data.lastUpdate;
+    };
+    const { isLoading, error } = useCovidApi({
+      endpoint: BASE_URL,
+      responseFn: getGlobalStats
+    });
+    const updatedAt = computed(() => {
+      const date = dayjs(lastUpdate.value);
+      return date.format('YYYY-MM-DD HH:mm:ss Z');
+    });
+
+    return { isLoading, error, confirmed, recovered, deaths, updatedAt };
   }
 };
 </script>

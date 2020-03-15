@@ -1,37 +1,28 @@
-import { watchEffect, ref, computed } from 'vue';
-import dayjs from 'dayjs';
+import { ref } from 'vue';
 
-const BASE_URL = 'https://covid19.mathdro.id/api';
+export const BASE_URL = 'https://covid19.mathdro.id/api';
 
-const handleError = err => {
-  // eslint-disable-next-line no-console
-  console.log('OH NO!', err);
+const getCovidResponse = async (endpoint, params) => {
+  const response = await fetch(endpoint, params);
+  return response.json();
 };
 
-export const useCovidApi = endpoint => {
-  const url = endpoint ? `${BASE_URL}/${endpoint}` : `${BASE_URL}`;
+export const useCovidApi = ({ endpoint, params, responseFn }) => {
   const isLoading = ref(true);
-  let stats = ref({});
-  let updatedAt = computed(() => {
-    const lastUpdate = dayjs(stats.value.lastUpdate);
-    return lastUpdate.format('YYYY-MM-DD HH:mm:ss Z');
-  });
+  const error = ref(null);
 
-  watchEffect(() => {
-    const fetchData = async () => {
-      isLoading.value = true;
-      const response = await fetch(url);
-      return response.json();
-    };
-    fetchData()
-      .catch(handleError)
-      .then(res => {
-        stats.value = res;
-      })
-      .finally(() => {
-        isLoading.value = false;
-      });
-  });
+  getCovidResponse(endpoint, params)
+    .catch(error => {
+      error.value = error;
+    })
+    .then(response => {
+      if (responseFn) {
+        responseFn(response);
+      }
+    })
+    .finally(() => {
+      isLoading.value = false;
+    });
 
-  return { stats, isLoading, updatedAt };
+  return { isLoading, error };
 };
