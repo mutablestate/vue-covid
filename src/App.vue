@@ -34,7 +34,7 @@ export default {
     const deaths = ref(0);
     const lastUpdate = ref('');
 
-    const getGlobalStats = data => {
+    const updateStats = data => {
       confirmed.value = data.confirmed.value;
       recovered.value = data.recovered.value;
       deaths.value = data.deaths.value;
@@ -42,7 +42,7 @@ export default {
     };
     const { isLoading, error } = useCovidApi({
       endpoint: BASE_URL,
-      responseFn: getGlobalStats
+      handleData: updateStats
     });
     const updatedAt = computed(() => {
       const date = dayjs(lastUpdate.value);

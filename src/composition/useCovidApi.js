@@ -7,7 +7,7 @@ const getCovidResponse = async (endpoint, params) => {
   return response.json();
 };
 
-export const useCovidApi = ({ endpoint, params, responseFn }) => {
+export const useCovidApi = ({ endpoint, params, handleData }) => {
   const isLoading = ref(true);
   const error = ref(null);
 
@@ -15,9 +15,9 @@ export const useCovidApi = ({ endpoint, params, responseFn }) => {
     .catch(error => {
       error.value = error;
     })
-    .then(response => {
-      if (responseFn) {
-        responseFn(response);
+    .then(data => {
+      if (handleData) {
+        handleData(data);
       }
     })
     .finally(() => {

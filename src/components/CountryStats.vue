@@ -54,7 +54,7 @@
 </template>
 
 <script>
-import { ref, computed } from 'vue';
+import { ref, computed, watchEffect } from 'vue';
 import dayjs from 'dayjs';
 import StatsGrid from '@/components/StatsGrid.vue';
 import { useCovidApi, BASE_URL } from '@/composition/useCovidApi';
@@ -75,7 +75,22 @@ export default {
     const isLoading = ref(true);
     const error = ref('');
 
-    const getCountryStats = data => {
+    const updatedAt = computed(() => {
+      if (lastUpdate.value) {
+        const date = dayjs(lastUpdate.value);
+        return date.format('YYYY-MM-DD HH:mm:ss Z');
+      }
+    });
+
+    const updateCountries = data => {
+      countries.value = data.countries;
+    };
+    useCovidApi({
+      endpoint: `${BASE_URL}/countries`,
+      handleData: updateCountries
+    });
+
+    const updateStats = data => {
       if (data.error) {
         error.value = data.error;
       } else {
@@ -86,28 +101,19 @@ export default {
         lastUpdate.value = data.lastUpdate;
       }
     };
-    const getCountries = data => {
-      countries.value = data.countries;
-    };
-    useCovidApi({
-      endpoint: `${BASE_URL}/countries`,
-      responseFn: getCountries
-    });
-    const updatedAt = computed(() => {
-      if (lastUpdate.value) {
-        const date = dayjs(lastUpdate.value);
-        return date.format('YYYY-MM-DD HH:mm:ss Z');
+    watchEffect(() => {
+      if (selectedCountry.value) {
+        const { isLoading, error } = useCovidApi({
+          endpoint: `${BASE_URL}/countries/${selectedCountry.value}`,
+          handleData: updateStats
+        });
+        isLoading.value = isLoading;
+        error.value = error;
       }
     });
 
     const handleSelectCountry = e => {
       selectedCountry.value = e.target.value;
-      const { isLoading, error } = useCovidApi({
-        endpoint: `${BASE_URL}/countries/${selectedCountry.value}`,
-        responseFn: getCountryStats
-      });
-      isLoading.value = isLoading;
-      error.value = error;
     };
 
     return {
