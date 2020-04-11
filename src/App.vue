@@ -1,5 +1,45 @@
+<script lang="ts">
+import { defineComponent, ref, computed } from 'vue';
+import dayjs from 'dayjs';
+// eslint-disable-next-line no-unused-vars
+import { ICovidData } from './interfaces';
+import { useCovidApi, BASE_URL } from './composition/useCovidApi';
+import StatsGrid from './components/StatsGrid.vue';
+import CountryStats from './components/CountryStats.vue';
+
+export default defineComponent({
+  name: 'App',
+  components: { StatsGrid, CountryStats },
+  setup() {
+    const confirmed = ref<number>(0);
+    const recovered = ref<number>(0);
+    const deaths = ref<number>(0);
+    const lastUpdate = ref<string>('');
+
+    const updateStats = (data: ICovidData | any) => {
+      confirmed.value = data.confirmed.value;
+      recovered.value = data.recovered.value;
+      deaths.value = data.deaths.value;
+      lastUpdate.value = data.lastUpdate;
+    };
+    const { isLoading, error } = useCovidApi({
+      endpoint: BASE_URL,
+      handleData: updateStats
+    });
+    const updatedAt = computed(() => {
+      const date = dayjs(lastUpdate.value);
+      return date.format('YYYY-MM-DD HH:mm:ss Z');
+    });
+
+    return { isLoading, error, confirmed, recovered, deaths, updatedAt };
+  }
+});
+</script>
+
 <template>
   <div id="app" class="container max-w-s mx-auto">
+    <div v-if="error">Error: {{ error }}</div>
+
     <section v-if="isLoading">
       loading...
     </section>
@@ -17,41 +57,3 @@
     </section>
   </div>
 </template>
-
-<script>
-import { ref, computed } from 'vue';
-import dayjs from 'dayjs';
-import { useCovidApi, BASE_URL } from '@/composition/useCovidApi';
-import StatsGrid from '@/components/StatsGrid.vue';
-import CountryStats from '@/components/CountryStats.vue';
-
-export default {
-  name: 'App',
-  components: { StatsGrid, CountryStats },
-  setup() {
-    const confirmed = ref(0);
-    const recovered = ref(0);
-    const deaths = ref(0);
-    const lastUpdate = ref('');
-
-    const updateStats = data => {
-      confirmed.value = data.confirmed.value;
-      recovered.value = data.recovered.value;
-      deaths.value = data.deaths.value;
-      lastUpdate.value = data.lastUpdate;
-    };
-    const { isLoading, error } = useCovidApi({
-      endpoint: BASE_URL,
-      handleData: updateStats
-    });
-    const updatedAt = computed(() => {
-      const date = dayjs(lastUpdate.value);
-      return date.format('YYYY-MM-DD HH:mm:ss Z');
-    });
-
-    return { isLoading, error, confirmed, recovered, deaths, updatedAt };
-  }
-};
-</script>
-
-<style></style>
