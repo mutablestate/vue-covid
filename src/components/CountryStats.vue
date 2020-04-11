@@ -1,3 +1,82 @@
+<script lang="ts">
+import { defineComponent, ref, computed, watchEffect } from 'vue';
+// eslint-disable-next-line no-unused-vars
+import { Ref, ICovidData, ICountriesData, ICountry } from '../interfaces';
+import dayjs from 'dayjs';
+import StatsGrid from '@/components/StatsGrid.vue';
+import { useCovidApi, BASE_URL } from '@/composition/useCovidApi';
+
+export default defineComponent({
+  name: 'CountryStats',
+  components: {
+    StatsGrid
+  },
+  setup() {
+    const selectedCountry = ref<string>('');
+    const countries = ref<ICountry[]>([]);
+    const confirmed = ref<number>(0);
+    const recovered = ref<number>(0);
+    const deaths = ref<number>(0);
+    const lastUpdate = ref<string>('');
+    const isLoading = ref<boolean>(true);
+    const error = ref<string | null>(null);
+
+    const updatedAt = computed(() => {
+      if (lastUpdate.value) {
+        const date = dayjs(lastUpdate.value);
+        return date.format('YYYY-MM-DD HH:mm:ss Z');
+      }
+    });
+
+    const updateCountries = (data: ICountriesData | any) => {
+      countries.value = data.countries;
+    };
+    useCovidApi({
+      endpoint: `${BASE_URL}/countries`,
+      handleData: updateCountries
+    });
+
+    const updateStats = (data: ICovidData | any) => {
+      if (data.error) {
+        error.value = data.error;
+      } else {
+        error.value = '';
+        confirmed.value = data.confirmed.value;
+        recovered.value = data.recovered.value;
+        deaths.value = data.deaths.value;
+        lastUpdate.value = data.lastUpdate;
+      }
+    };
+    watchEffect(() => {
+      if (selectedCountry.value) {
+        const { isLoading, error } = useCovidApi({
+          endpoint: `${BASE_URL}/countries/${selectedCountry.value}`,
+          handleData: updateStats
+        });
+        isLoading.value = isLoading;
+        error.value = error;
+      }
+    });
+
+    const handleSelectCountry = (e): void => {
+      selectedCountry.value = e.target.value;
+    };
+
+    return {
+      isLoading,
+      error,
+      countries,
+      confirmed,
+      recovered,
+      deaths,
+      updatedAt,
+      selectedCountry,
+      handleSelectCountry
+    };
+  }
+});
+</script>
+
 <template>
   <div>
     <form class="w-full max-w-sm mt-10 mx-auto">
@@ -17,10 +96,10 @@
           >
             <option disabled value="">Please select one</option>
             <option
-              v-for="(code, country) in countries"
-              :key="code"
-              :value="code"
-              >{{ country }}</option
+              v-for="country in countries"
+              :key="country.iso2"
+              :value="country.iso2"
+              >{{ country.name }}</option
             >
           </select>
           <div class="caret">
@@ -52,84 +131,6 @@
     </section>
   </div>
 </template>
-
-<script>
-import { ref, computed, watchEffect } from 'vue';
-import dayjs from 'dayjs';
-import StatsGrid from '@/components/StatsGrid.vue';
-import { useCovidApi, BASE_URL } from '@/composition/useCovidApi';
-
-export default {
-  name: 'CountryStats',
-  components: {
-    StatsGrid
-  },
-  props: {},
-  setup() {
-    const selectedCountry = ref('');
-    const countries = ref([]);
-    const confirmed = ref(0);
-    const recovered = ref(0);
-    const deaths = ref(0);
-    const lastUpdate = ref('');
-    const isLoading = ref(true);
-    const error = ref('');
-
-    const updatedAt = computed(() => {
-      if (lastUpdate.value) {
-        const date = dayjs(lastUpdate.value);
-        return date.format('YYYY-MM-DD HH:mm:ss Z');
-      }
-    });
-
-    const updateCountries = data => {
-      countries.value = data.countries;
-    };
-    useCovidApi({
-      endpoint: `${BASE_URL}/countries`,
-      handleData: updateCountries
-    });
-
-    const updateStats = data => {
-      if (data.error) {
-        error.value = data.error;
-      } else {
-        error.value = '';
-        confirmed.value = data.confirmed.value;
-        recovered.value = data.recovered.value;
-        deaths.value = data.deaths.value;
-        lastUpdate.value = data.lastUpdate;
-      }
-    };
-    watchEffect(() => {
-      if (selectedCountry.value) {
-        const { isLoading, error } = useCovidApi({
-          endpoint: `${BASE_URL}/countries/${selectedCountry.value}`,
-          handleData: updateStats
-        });
-        isLoading.value = isLoading;
-        error.value = error;
-      }
-    });
-
-    const handleSelectCountry = e => {
-      selectedCountry.value = e.target.value;
-    };
-
-    return {
-      isLoading,
-      error,
-      countries,
-      confirmed,
-      recovered,
-      deaths,
-      updatedAt,
-      selectedCountry,
-      handleSelectCountry
-    };
-  }
-};
-</script>
 
 <style lang="postcss">
 .caret {
