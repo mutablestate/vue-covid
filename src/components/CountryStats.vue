@@ -17,10 +17,10 @@
           >
             <option disabled value="">Please select one</option>
             <option
-              v-for="(code, country) in countries"
-              :key="code"
-              :value="code"
-              >{{ country }}</option
+              v-for="country in countries"
+              :key="country.iso2"
+              :value="country.iso2"
+              >{{ country.name }}</option
             >
           </select>
           <div class="caret">
