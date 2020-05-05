@@ -34,7 +34,7 @@ export default {
     const deaths = ref(0);
     const lastUpdate = ref('');
 
-    const updateStats = data => {
+    const updateStats = (data) => {
       confirmed.value = data.confirmed.value;
       recovered.value = data.recovered.value;
       deaths.value = data.deaths.value;

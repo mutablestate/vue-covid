@@ -12,10 +12,10 @@ export const useCovidApi = ({ endpoint, params, handleData }) => {
   const error = ref(null);
 
   getCovidResponse(endpoint, params)
-    .catch(error => {
+    .catch((error) => {
       error.value = error;
     })
-    .then(data => {
+    .then((data) => {
       if (handleData) {
         handleData(data);
       }
