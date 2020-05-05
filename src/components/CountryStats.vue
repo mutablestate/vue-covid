@@ -82,7 +82,7 @@ export default {
       }
     });
 
-    const updateCountries = data => {
+    const updateCountries = (data) => {
       countries.value = data.countries;
     };
     useCovidApi({
@@ -90,7 +90,7 @@ export default {
       handleData: updateCountries
     });
 
-    const updateStats = data => {
+    const updateStats = (data) => {
       if (data.error) {
         error.value = data.error;
       } else {
@@ -112,7 +112,7 @@ export default {
       }
     });
 
-    const handleSelectCountry = e => {
+    const handleSelectCountry = (e) => {
       selectedCountry.value = e.target.value;
     };
 
